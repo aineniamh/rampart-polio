@@ -1,0 +1,28 @@
+##### Where is the data? #####
+
+input_path: path/to/bin 
+annotated_path: path/to/csv
+output_path: path/to/binned #where rampart will put the binned/ filtered files 
+
+config: config_file
+
+##### Mapping reference panel #####
+
+references_file: references.fasta
+
+##### Barcodes to process #####
+
+sample: 
+barcodes: BCXX,BCYY
+
+##### Read length filtering range #####
+
+min_length: 800
+max_length: 2600
+
+##### Read thresholds #####
+
+min_reads: 100
+min_pcent: 2
+
+##### Analysis Stem #####
