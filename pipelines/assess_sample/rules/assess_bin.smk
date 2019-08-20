@@ -1,7 +1,7 @@
 rule assess_sample:
     input:
-        reads= config["input_path"] + "/binned_{sample}.fastq",
-        csv= config["input_path"] + "/binned_{sample}.csv",
+        reads= config["output_path"] + "/binned_{sample}.fastq",
+        csv= config["output_path"] + "/binned_{sample}.csv",
         refs = config["references"],
         config = config["config"]
     params:

@@ -6,7 +6,7 @@ rule binlorry:
         outdir = config["output_path"],
         min_length= config["min_length"],
         max_length= config["max_length"],
-        bin_by_option= bin_string,
+        # bin_by_option= bin_string,
         barcodes = barcode_string,
         sample = sample_string
     output:
@@ -20,5 +20,5 @@ rule binlorry:
         "-x {params.max_length} "
         "--filter-by barcode {params.barcodes} "
         "--out-report"
-        " {params.bin_by_option}"
+        # " {params.bin_by_option}"
 

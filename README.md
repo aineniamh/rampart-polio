@@ -10,16 +10,12 @@ Resources to aid in sequencing poliovirus in a clinical or field setting using n
 <img src="https://github.com/aineniamh/rampart-polio/blob/master/figures/polio_rampart.png">
 
 
-## run demux_map
+## run analysis pipeline
 
 ```bash
-snakemake \
---snakefile pipelines/demux_map/Snakefile \
---configfile pipelines/demux_map/config.yaml \
---config \
-filename_stem=FAK42048_dd2780e2a05b66437f26aefe02f6af5817bb6020_5 \
-input_path=path/to/data/basecalled/pass \
-output_path=path/to/pipeline_output \
-references_file=references.fasta \
-barcodes=[19,20,21,22]
+snakemake 
+--snakefile pipelines/analysis_master/Snakefile.smk \
+--config input_path=path/to/basecalled \
+annotated_path=path/to/csv \
+output_path=path/to/output
 ```

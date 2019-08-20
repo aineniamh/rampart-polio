@@ -6,12 +6,8 @@
 	},
 	"post-processing": [
 		{
-			"name": "Bin reads",
-			"path": "pipelines/bin_to_fastq"
-		},
-		{
-			"name": "Assess sample",
-			"path": "pipelines/assess_sample"
+			"name": "Analyse to consensus",
+			"path": "pipelines/analysis_master"
 		}
 	]
 }

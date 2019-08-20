@@ -58,9 +58,9 @@ with open(args.config_out,"w") as new_config: #file to write genotype informatio
     with open(args.config_in, "r") as f:
         for l in f:
             l=l.rstrip('\n')
-            if l.startswith("barcode"):
-                new_config.write("barcode: {}\n".format(args.sample))
-            elif not l.startswith("config"):
+            # if l.startswith("barcodes"):
+            #     new_config.write("barcode: {}\n".format(args.sample))
+            if not l.startswith("config"):
                 new_config.write(l + '\n')
     new_config.write("analysis_stem:\n")
     for ref in refs:

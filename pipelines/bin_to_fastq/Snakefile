@@ -5,10 +5,6 @@ barcode_string = ""
 for i in barcodes:
     barcode_string+=" {}".format(i)
 
-bin_string = ""
-if config["bin_by"]:
-    bin_string = "--bin-by " + config["bin_by"]
-
 sample_string = ""
 if config["sample"]:
     sample_string = config["sample"]
