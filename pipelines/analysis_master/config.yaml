@@ -13,12 +13,12 @@ references_file: references.fasta
 ##### Barcodes to process #####
 
 sample: test_sample
-barcodes: NB19,NB20
+barcodes: NBXX,NBYY
 
 ##### Read length filtering range #####
 
-min_length: 800
-max_length: 2600
+min_length: 500
+max_length: 2500
 
 ##### Read thresholds #####
 
