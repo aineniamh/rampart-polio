@@ -7,14 +7,19 @@ Repository for a snakemake pipeline for running analysis for the artic-polio Min
 Resources to aid in sequencing poliovirus in a clinical or field setting using nanopore technology. The bioinformatic pipeline was developed using [snakemake](https://snakemake.readthedocs.io/en/stable/). 
 
 
-<!-- <img src="https://github.com/aineniamh/rampart-polio/blob/master/figures/polio_rampart.png"> -->
+<img src="https://github.com/aineniamh/rampart-polio/blob/master/figures/polio_rampart.png">
 
 
 ## run analysis pipeline
 
 This pipeline assumes the reads have been run through [``RAMPART``](https://github.com/artic-network/rampart). It accepts basecalled reads and a csv file that contains barcoding and mapping information. This pipeline can be customised by modifying the variables in ``pipelines/analysis_master/config.yaml`` or by overwriting them in place with a command-line call.
 
-Example command:
+If you modify the ``config.yaml`` file, to run the analysis, simply type:
+```bash
+snakemake --snakefile pipelines/analysis_master/Snakefile.smk
+```
+
+To overwrite the config parameters on the command line:
 
 ```bash
 snakemake \
