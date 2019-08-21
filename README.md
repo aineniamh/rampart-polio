@@ -1,6 +1,6 @@
 # rampart-polio
 
-Repository for a snakemake pipeline for running analysis for the artic-polio MinION sequencing project in collaboration with the Grassly lab.
+This pipeline complements [``RAMPART``](https://github.com/artic-network/rampart) and continues downstream analysis to consensus level.
 
 ## background
 
