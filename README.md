@@ -9,7 +9,25 @@ Resources to aid in sequencing poliovirus in a clinical or field setting using n
 
 <img src="https://github.com/aineniamh/rampart-polio/blob/master/figures/polio_rampart.png">
 
+## setup
 
+Clone this repository:
+
+```bash
+git clone https://github.com/aineniamh/rampart-polio.git
+```
+
+and create the conda environment:
+
+```bash
+conda env create -f rampart-polio/environment.yml
+```
+
+Activate the conda environment:
+
+```bash
+conda activate rampart-polio
+```
 ## run analysis pipeline
 
 This pipeline assumes the reads have been run through [``RAMPART``](https://github.com/artic-network/rampart). It accepts basecalled reads and a csv file that contains barcoding and mapping information. This pipeline can be customised by modifying the variables in ``pipelines/analysis_master/config.yaml`` or by overwriting them in place with a command-line call.
