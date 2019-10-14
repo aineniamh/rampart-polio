@@ -9,7 +9,7 @@ rule assess_sample:
         output_path = config["output_path"] + "/binned_{sample}",
         min_reads = config["min_reads"],
         min_pcent = config["min_pcent"],
-        path_to_script = workflow.current_basedir
+        path_to_script = workflow.current_basedir,
     output:
         fig = config["output_path"] + "/binned_{sample}/reference_count.pdf",
         new_config =  config["output_path"] + "/binned_{sample}/config.yaml"

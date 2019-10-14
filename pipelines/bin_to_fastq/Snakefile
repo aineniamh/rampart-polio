@@ -1,22 +1,28 @@
 ##### Configuration #####
+config["output_path"] = config["output_path"].rstrip("/")
+config["annotated_path"] = config["annotated_path"].rstrip("/")
+config["input_path"] = config["input_path"].rstrip("/")
 
 barcodes = config["barcodes"].split(',')
 barcode_string = ""
 for i in barcodes:
     barcode_string+=" {}".format(i)
 
+bin_string = ""
+if "bin_by" in config:
+    bin_string = "--bin-by " + config["bin_by"]
+
 sample_string = ""
-if config["sample"]:
+if "sample" in config:
     sample_string = config["sample"]
 else:
     sample_string = "_".join(barcodes)
-    config["sample"]=sample_string
-    
+
 ##### Target rules #####
 
 rule all:
     input:
-        expand(config["output_path"] + "/binned_{sample}.fastq",sample=config["sample"])
+        config["output_path"] + "/binned_{}.fastq".format(sample_string)
         #output of this pipeline is both the fastq file and a csv report of the reads in that file, with respective annotations.
 
 ##### Modules #####

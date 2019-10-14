@@ -1,32 +1,45 @@
+import yaml 
+
 ##### Configuration #####
 
-configfile: "pipelines/analysis_master/config.yaml"
+# configfile: "pipelines/analysis_master/config.yaml"
+
+config["output_path"] = config["output_path"].rstrip("/")
+config["annotated_path"] = config["annotated_path"].rstrip("/")
+config["input_path"] = config["input_path"].rstrip("/")
+config_path = config["config"].rstrip("/")
+
 
 barcodes = config["barcodes"].split(',')
-
 barcode_string = ""
 for i in barcodes:
     barcode_string+=" {}".format(i)
 
+bin_string = ""
+if "bin_by" in config:
+    bin_string = "--bin-by " + config["bin_by"]
+
 sample_string = ""
+sample_command = ''
 if config["sample"]:
+    print(config["sample"])
     sample_string = config["sample"]
 else:
     sample_string = "_".join(barcodes)
-    config["sample"]=sample_string
-    
 
+if sample_string=="None":
+    sample_command = f' sample={sample_string}'
 
 ##### Subworkflows #####
 rule all:
     input:
-        expand(config["output_path"] + "/consensus_sequences/{sample}.fasta",  sample=config["sample"])
+        config["output_path"] + f"/consensus_sequences/{sample_string}.fasta"
 
 rule bin_to_fastq:
     input:
     params:
         barcodes = config["barcodes"],
-        sample= config["sample"],
+        sample= sample_command,
         path_to_reads= config["input_path"],
         path_to_csv= config["annotated_path"],
         output_path= config["output_path"],
@@ -43,15 +56,15 @@ rule bin_to_fastq:
         "annotated_path={params.path_to_csv} "
         "min_length={params.min_length} "
         "max_length={params.max_length} "
-        "barcodes={params.barcodes} "
-        "sample={params.sample} "
+        "barcodes={params.barcodes}"
+        "{params.sample}"
 
 rule assess_sample:
     input:
         fastq=config["output_path"] + "/binned_{sample}.fastq",
         csv= config["output_path"] + "/binned_{sample}.csv",
         refs = config["references_file"],
-        config = config["config"]
+        config = config_path
     params:
         sample = "{sample}",
         output_path= config["output_path"],
@@ -67,11 +80,10 @@ rule assess_sample:
         "csv={input.csv} "
         "output_path={params.output_path} "
         "references={input.refs} "
-        "config_in={input.config} "
-        "config_out={output} "
+        "config={input.config} "
         "min_reads={params.min_reads} "
         "min_pcent={params.min_pcent} "
-        "sample={params.sample} "
+        "sample={params.sample}"
 
 rule make_consensus:
     input:
@@ -81,9 +93,22 @@ rule make_consensus:
         output_path= config["output_path"]
     output:
         config["output_path"] + "/consensus_sequences/{sample}.fasta"
-    shell:
-        "snakemake --nolock --snakefile pipelines/make_consensus/Snakefile "
-        "--configfile {input.config} "
-        "--config "
-        "output_path={params.output_path} "
-        "sample={params.sample}"
+    run:
+        with open(input.config, "r") as stream:
+            new_config = yaml.safe_load(stream)
+            print(new_config)
+            if "analysis_stem" in new_config:
+                if new_config["analysis_stem"] != None:
+
+                    shell("snakemake --nolock --snakefile pipelines/make_consensus/Snakefile "
+                        "--configfile {input.config} "
+                        "--config "
+                        "output_path={params.output_path} "
+                        "sample={params.sample}")
+                else:
+                    print("No analysis stem to run polishing on.")
+                    shell("touch {output}")
+            else:
+                print("No analysis stem to run polishing on.")
+                shell("touch {output}")
+

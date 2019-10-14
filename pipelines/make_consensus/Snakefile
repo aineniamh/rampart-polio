@@ -15,7 +15,7 @@ else:
     sample_string = "_".join(barcodes)
     config["sample"]=sample_string
 
-
+# rounds = [1,2,3,4]
 ##### Target rules #####
 
 rule all:
@@ -24,6 +24,5 @@ rule all:
         expand(config["output_path"] + "/binned_{sample}/polishing/{analysis_stem}/mapped.paf",sample=config["sample"],analysis_stem=config["analysis_stem"])
 
 ##### Modules #####
+
 include: "rules/map_polish.smk"
-
-

@@ -37,7 +37,12 @@ coord_unmapped = 0
 record_count=0
 
 report = pd.read_csv(args.report)
-ref_count  = report['best_reference'].value_counts()
+report["ref_stem"]=report["best_reference"].str.split("_").str[0]
+detailed_ref_count = report['best_reference'].value_counts()
+
+ref_count  = report['ref_stem'].value_counts()
+
+
 fig, ax = plt.subplots(figsize=(15,11))
 sns.barplot(ref_count.index, ref_count.values, alpha=0.8)
 plt.title('Reference profile of sample {}'.format(args.sample))
@@ -46,13 +51,21 @@ plt.xlabel('Reference', fontsize=12)
 plt.xticks(rotation=20)
 fig.savefig(args.output_path + "/reference_count.pdf")
 
+detail_dict= {}
+for i,x in zip(list(detailed_ref_count.index), list(detailed_ref_count.values)):
+    stem = i.split("_")[0]
+    if stem not in detail_dict:
+        detail_dict[stem] = i
+
 
 total = len(report)
 refs = []
 for i,x in zip(list(ref_count.index), list(ref_count.values)):
     pcent = 100*(x/total)
+    print(i, x, pcent)
     if x>args.min_reads and pcent > args.min_pcent:
-        refs.append(i)
+        if i != '*':
+            refs.append(i.split('_')[0])
 
 with open(args.config_out,"w") as new_config: #file to write genotype information
     with open(args.config_in, "r") as f:
@@ -68,9 +81,10 @@ with open(args.config_out,"w") as new_config: #file to write genotype informatio
 
 for ref in refs:
     with open(args.output_path + "/" + ref+ ".fasta","w") as fw:
-        fw.write(">{}\n{}\n".format(ref, ref_dict[ref]))
+        
+        fw.write(">{} detail={}\n{}\n".format(ref, detail_dict[ref], ref_dict[detail_dict[ref]]))
 
-    filtered_df = report.loc[(report["best_reference"]==ref)]
+    filtered_df = report.loc[(report["ref_stem"]==ref)]
     read_names = list(filtered_df["read_name"].values)
     new_file = args.output_path + "/" + ref + ".fastq"
     with open(new_file,"w") as fw:
