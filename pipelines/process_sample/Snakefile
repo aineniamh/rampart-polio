@@ -1,0 +1,30 @@
+import os
+from Bio import SeqIO
+
+##### Configuration #####
+
+barcodes = config["barcodes"].split(',')
+barcode_string = ""
+for i in barcodes:
+    barcode_string+=" {}".format(i)
+
+sample_string = ""
+if config["sample"]:
+    sample_string = config["sample"]
+else:
+    sample_string = "_".join(barcodes)
+    config["sample"]=sample_string
+
+# rounds = [1,2,3,4]
+##### Target rules #####
+
+rule all:
+    input:
+        expand(config["output_path"] + "/consensus_sequences/{sample}.fasta",sample=config["sample"]),
+        expand(config["output_path"] + "/binned_{sample}/de_novo/draft_with_error.gfa",sample=config["sample"]),
+        expand(config["output_path"] + "/binned_{sample}/polishing/{analysis_stem}/mapped.paf",sample=config["sample"],analysis_stem=config["analysis_stem"])
+
+##### Modules #####
+
+include: "rules/map_polish.smk",
+include: "rules/unmapped.smk"

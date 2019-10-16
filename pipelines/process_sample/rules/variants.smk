@@ -23,6 +23,6 @@ rule call_cns_variants:
     params:
         dir = config["output_path"] + "/binned_{sample}/medaka_variant/{analysis_stem}"
     output:
-        config["output_path"] + "/binned_{sample}/medaka_variant/{analysis_stem}/round_2_final_phased.vcf"
+        config["output_path"] + "/binned_{sample}/medaka_variant/{analysis_stem}/round_1_phased.vcf"
     shell:
         "medaka_variant -f {input.consensus} -i {input.map} -o {params.dir} -m r941_trans || touch {output}"

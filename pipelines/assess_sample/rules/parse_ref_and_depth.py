@@ -94,3 +94,14 @@ for ref in refs:
                 records.append(record)
 
         SeqIO.write(records, fw, "fastq")
+
+none_df = report.loc[(report["best_reference"]=='*')]
+read_names = list(none_df["read_name"].values)
+new_file = args.output_path + "/no_hit.fastq"
+with open(new_file,"w") as fw:
+    records = []
+    for record in SeqIO.parse(args.reads,"fastq"):
+        if record.id in read_names:
+            records.append(record)
+
+    SeqIO.write(records, fw, "fastq")

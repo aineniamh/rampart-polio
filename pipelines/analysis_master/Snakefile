@@ -33,7 +33,8 @@ if sample_string=="None":
 ##### Subworkflows #####
 rule all:
     input:
-        config["output_path"] + f"/consensus_sequences/{sample_string}.fasta"
+        config["output_path"] + f"/consensus_sequences/{sample_string}.fasta",
+        config["output_path"] + f"/binned_{sample_string}/de_novo/draft_with_error.gfa"
 
 rule bin_to_fastq:
     input:
@@ -44,12 +45,13 @@ rule bin_to_fastq:
         path_to_csv= config["annotated_path"],
         output_path= config["output_path"],
         min_length = config["min_length"],
-        max_length = config["max_length"]
+        max_length = config["max_length"],
+        path = workflow.current_basedir
     output:
         fastq=config["output_path"] + "/binned_{sample}.fastq",
         csv=config["output_path"] + "/binned_{sample}.csv"
     shell:
-        "snakemake --nolock --snakefile pipelines/bin_to_fastq/Snakefile "
+        "snakemake --nolock --snakefile {params.path}/../bin_to_fastq/Snakefile "
         "--config "
         "input_path={params.path_to_reads} "
         "output_path={params.output_path} "
@@ -69,11 +71,12 @@ rule assess_sample:
         sample = "{sample}",
         output_path= config["output_path"],
         min_reads=config["min_reads"],
-        min_pcent=config["min_pcent"]
+        min_pcent=config["min_pcent"],
+        path = workflow.current_basedir
     output:
         config["output_path"] + "/binned_{sample}/config.yaml"
     shell:
-        "snakemake --nolock --snakefile pipelines/assess_sample/Snakefile "
+        "snakemake --nolock --snakefile {params.path}/../assess_sample/Snakefile "
         "--configfile {input.config} "
         "--config "
         "reads={input.fastq} "
@@ -85,14 +88,16 @@ rule assess_sample:
         "min_pcent={params.min_pcent} "
         "sample={params.sample}"
 
-rule make_consensus:
+rule process_sample:
     input:
         config=config["output_path"] + "/binned_{sample}/config.yaml"
     params:
         sample = "{sample}",
-        output_path= config["output_path"]
+        output_path= config["output_path"],
+        path = workflow.current_basedir
     output:
-        config["output_path"] + "/consensus_sequences/{sample}.fasta"
+        cns = config["output_path"] + "/consensus_sequences/{sample}.fasta",
+        draft = config["output_path"] + "/binned_{sample}/de_novo/draft_with_error.gfa"
     run:
         with open(input.config, "r") as stream:
             new_config = yaml.safe_load(stream)
@@ -100,15 +105,20 @@ rule make_consensus:
             if "analysis_stem" in new_config:
                 if new_config["analysis_stem"] != None:
 
-                    shell("snakemake --nolock --snakefile pipelines/make_consensus/Snakefile "
+                    shell("snakemake --nolock --snakefile {params.path}/../process_sample/Snakefile "
                         "--configfile {input.config} "
                         "--config "
                         "output_path={params.output_path} "
                         "sample={params.sample}")
                 else:
                     print("No analysis stem to run polishing on.")
-                    shell("touch {output}")
+                    shell("touch {output.cns}")
+                    shell("snakemake --nolock --snakefile {params.path}/../process_unmapped/Snakefile "
+                        "--configfile {input.config} "
+                        "--config "
+                        "output_path={params.output_path} "
+                        "sample={params.sample}")
             else:
                 print("No analysis stem to run polishing on.")
-                shell("touch {output}")
+                shell("touch {output.cns} && touch {output.draft}")
 
