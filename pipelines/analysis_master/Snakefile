@@ -112,12 +112,12 @@ rule process_sample:
                         "sample={params.sample}")
                 else:
                     print("No analysis stem to run polishing on.")
-                    shell("touch {output.cns}")
-                    shell("snakemake --nolock --snakefile {params.path}/../process_unmapped/Snakefile "
-                        "--configfile {input.config} "
-                        "--config "
-                        "output_path={params.output_path} "
-                        "sample={params.sample}")
+                    shell("touch {output.cns} && touch {output.draft}")
+                    # shell("snakemake --nolock --snakefile {params.path}/../process_unmapped/Snakefile "
+                    #     "--configfile {input.config} "
+                    #     "--config "
+                    #     "output_path={params.output_path} "
+                    #     "sample={params.sample}")
             else:
                 print("No analysis stem to run polishing on.")
                 shell("touch {output.cns} && touch {output.draft}")
