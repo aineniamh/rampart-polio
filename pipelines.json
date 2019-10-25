@@ -5,7 +5,7 @@
             "path": "pipelines/analysis_master",
             "processing": true,
             "config_file": "config.yaml",
-            "config": "",
+            "config": " config=pipelines/analysis_master/config.yaml",
             "run_per_sample": true,
             "options": {
                 "min_read_length": true,
