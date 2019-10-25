@@ -2,12 +2,10 @@ import yaml
 
 ##### Configuration #####
 
-# configfile: "pipelines/analysis_master/config.yaml"
-
 config["output_path"] = config["output_path"].rstrip("/")
 config["annotated_path"] = config["annotated_path"].rstrip("/")
 config["input_path"] = config["input_path"].rstrip("/")
-config_path = config["config"].rstrip("/")
+config_file = config["config"].rstrip("/")
 
 
 barcodes = config["barcodes"].split(',')
@@ -34,6 +32,7 @@ if sample_string=="None":
 rule all:
     input:
         config["output_path"] + f"/consensus_sequences/{sample_string}.fasta",
+        expand(config["output_path"] + f"/binned_{sample_string}/config.yaml"),
         config["output_path"] + f"/binned_{sample_string}/de_novo/draft_with_error.gfa"
 
 rule bin_to_fastq:
@@ -63,30 +62,30 @@ rule bin_to_fastq:
 
 rule assess_sample:
     input:
-        fastq=config["output_path"] + "/binned_{sample}.fastq",
+        reads= config["output_path"] + "/binned_{sample}.fastq",
         csv= config["output_path"] + "/binned_{sample}.csv",
         refs = config["references_file"],
-        config = config_path
+        config = config["config"]
     params:
         sample = "{sample}",
-        output_path= config["output_path"],
-        min_reads=config["min_reads"],
-        min_pcent=config["min_pcent"],
-        path = workflow.current_basedir
+        output_path = config["output_path"] + "/binned_{sample}",
+        min_reads = config["min_reads"],
+        min_pcent = config["min_pcent"],
+        path_to_script = workflow.current_basedir,
     output:
-        config["output_path"] + "/binned_{sample}/config.yaml"
+        fig = config["output_path"] + "/binned_{sample}/reference_count.pdf",
+        new_config =  temp(config["output_path"] + "/binned_{sample}/config.yaml")
     shell:
-        "snakemake --nolock --snakefile {params.path}/../assess_sample/Snakefile "
-        "--configfile {input.config} "
-        "--config "
-        "reads={input.fastq} "
-        "csv={input.csv} "
-        "output_path={params.output_path} "
-        "references={input.refs} "
-        "config={input.config} "
-        "min_reads={params.min_reads} "
-        "min_pcent={params.min_pcent} "
-        "sample={params.sample}"
+        "python {params.path_to_script}/parse_ref_and_depth.py "
+        "--reads {input.reads} "
+        "--csv {input.csv} "
+        "--output_path {params.output_path} "
+        "--references {input.refs} "
+        "--config_in {input.config} "
+        "--config_out {output.new_config} "
+        "--min_reads {params.min_reads} "
+        "--min_pcent {params.min_pcent} "
+        "--sample {params.sample} "
 
 rule process_sample:
     input:
