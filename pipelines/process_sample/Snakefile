@@ -26,5 +26,4 @@ rule all:
 
 ##### Modules #####
 
-include: "rules/map_polish.smk",
-include: "rules/unmapped.smk"
+include: "rules/map_polish.smk"
