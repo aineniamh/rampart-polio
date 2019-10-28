@@ -1,80 +1,62 @@
 import yaml 
 from pytools.persistent_dict import PersistentDict
 
-
 ##### Configuration #####
 
 config["output_path"] = config["output_path"].rstrip("/")
 config["annotated_path"] = config["annotated_path"].rstrip("/")
-config["input_path"] = config["input_path"].rstrip("/")
+config["basecalled_path"] = config["basecalled_path"].rstrip("/")
 
-barcodes = config["barcodes"].split(',')
-barcode_string = ""
-for i in barcodes:
-    barcode_string+=" {}".format(i)
+barcodes = ""
+for i in config["barcodes"].split(','):
+    barcodes+=" {}".format(i)
 
-bin_string = ""
-if "bin_by" in config:
-    bin_string = "--bin-by " + config["bin_by"]
-
-sample_string = ""
-sample_command = ''
-if config["sample"]:
-    print(config["sample"])
-    sample_string = config["sample"]
-else:
-    sample_string = "_".join(barcodes)
-
-if sample_string=="None":
-    sample_command = f' sample={sample_string}'
+sample_name = config["sample_name"] if config.get("sample_name") else "_".join(config["barcodes"].split(','))
 
 stems = PersistentDict("stem_store")
 
 ##### Master workflow #####
+
 rule all:
     input:
-        config["output_path"] + f"/consensus_sequences/{sample_string}.fasta"
-        # config["output_path"] + f"/binned_{sample_string}/de_novo/draft_with_error.gfa"
+        config["output_path"] + f"/consensus_sequences/{sample_name}.fasta"
 
-rule bin_to_fastq:
+rule binlorry:
     input:
     params:
-        barcodes = config["barcodes"],
-        sample= sample_command,
-        path_to_reads= config["input_path"],
-        path_to_csv= config["annotated_path"],
-        output_path= config["output_path"],
-        min_length = config["min_length"],
-        max_length = config["max_length"],
-        path = workflow.current_basedir
+        path_to_reads = config["basecalled_path"],
+        report_dir = config["annotated_path"],
+        outdir = config["output_path"],
+        min_read_length = config["min_read_length"],
+        max_read_length = config["max_read_length"],
+        barcodes = barcodes,
+        sample_name = sample_name,
+        output_prefix= config["output_path"] + "/binned_{sample}"
     output:
         fastq=config["output_path"] + "/binned_{sample}.fastq",
         csv=config["output_path"] + "/binned_{sample}.csv"
     shell:
-        "snakemake --nolock --snakefile {params.path}/../bin_to_fastq/Snakefile "
-        "--config "
-        "input_path={params.path_to_reads} "
-        "output_path={params.output_path} "
-        "annotated_path={params.path_to_csv} "
-        "min_length={params.min_length} "
-        "max_length={params.max_length} "
-        "barcodes={params.barcodes}"
-        "{params.sample}"
+        "binlorry -i {params.path_to_reads:q} "
+        "-t {params.report_dir:q} "
+        "-o {params.output_prefix:q} "
+        "-n {params.min_read_length} "
+        "-x {params.max_read_length} "
+        "-v 0 "
+        "--filter-by barcode {params.barcodes} "
+        "--out-report"
 
 rule assess_sample:
     input:
-        reads= config["output_path"] + "/binned_{sample}.fastq",
-        csv= config["output_path"] + "/binned_{sample}.csv",
-        refs = config["references_file"],
-        config = config["config"]
+        reads= rules.binlorry.output.fastq,
+        csv= rules.binlorry.output.csv,
+        refs = config["references_file"]
     params:
         sample = "{sample}",
         output_path = config["output_path"] + "/binned_{sample}",
         min_reads = config["min_reads"],
         min_pcent = config["min_pcent"],
-        path_to_script = workflow.current_basedir,
+        path_to_script = workflow.current_basedir
     output:
-        fig = config["output_path"] + "/binned_{sample}/reference_count.pdf",
         t = temp(config["output_path"] + "/binned_{sample}/temp.txt")
     run:
         for i in shell(
@@ -91,23 +73,23 @@ rule assess_sample:
 
 rule process_sample:
     input:
-        config["output_path"] + "/binned_{sample}/temp.txt",
+        rules.assess_sample.output.t,
         config=workflow.current_basedir+"/config.yaml"
     params:
         sample = "{sample}",
         output_path= config["output_path"],
         path = workflow.current_basedir
     output:
-        cns = config["output_path"] + "/consensus_sequences/{sample}.fasta",
-        draft = config["output_path"] + "/binned_{sample}/de_novo/draft_with_error.gfa"
+        cns = config["output_path"] + "/consensus_sequences/{sample}.fasta"
     run:
-        analysis_stems = stems.fetch("analysis_stem")
+        analysis_stem = stems.fetch("analysis_stem")
         
         if analysis_stem != "":
+            print("Passing {} into processing pipeline.".format(analysis_stem))
             config["analysis_stem"]= analysis_stem
             shell("snakemake --nolock --snakefile {params.path}/../process_sample/Snakefile "
                         "--configfile {input.config} "
                         "--config "
                         "analysis_stem={config[analysis_stem]} "
-                        "output_path={config[output_path]} "
+                        "output_path={params.output_path} "
                         "sample={params.sample}")

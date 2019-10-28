@@ -39,15 +39,14 @@ report["ref_stem"]=report["best_reference"].str.split("_").str[0]
 detailed_ref_count = report['best_reference'].value_counts()
 
 ref_count  = report['ref_stem'].value_counts()
-
-
-fig, ax = plt.subplots(figsize=(15,11))
-sns.barplot(ref_count.index, ref_count.values, alpha=0.8)
-plt.title('Reference profile of sample {}'.format(args.sample))
-plt.ylabel('Read Count', fontsize=12)
-plt.xlabel('Reference', fontsize=12)
-plt.xticks(rotation=20)
-fig.savefig(args.output_path + "/reference_count.pdf")
+if len(ref_count) > 1:
+    fig, ax = plt.subplots(figsize=(15,11))
+    sns.barplot(ref_count.index, ref_count.values, alpha=0.8)
+    plt.title('Reference profile of sample {}'.format(args.sample))
+    plt.ylabel('Read Count', fontsize=12)
+    plt.xlabel('Reference', fontsize=12)
+    plt.xticks(rotation=20)
+    fig.savefig(args.output_path + "/reference_count.pdf")
 
 detail_dict= {}
 for i,x in zip(list(detailed_ref_count.index), list(detailed_ref_count.values)):

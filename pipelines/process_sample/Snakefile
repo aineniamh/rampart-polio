@@ -3,20 +3,7 @@ from Bio import SeqIO
 
 ##### Configuration #####
 
-barcodes = config["barcodes"].split(',')
-barcode_string = ""
-for i in barcodes:
-    barcode_string+=" {}".format(i)
-print(config["analysis_stem"])
-
 config["analysis_stem"]=[i for i in config["analysis_stem"].split(',')]
-print(config["analysis_stem"])
-sample_string = ""
-if config["sample"]:
-    sample_string = config["sample"]
-else:
-    sample_string = "_".join(barcodes)
-    config["sample"]=sample_string
 
 ##### Target rules #####
 

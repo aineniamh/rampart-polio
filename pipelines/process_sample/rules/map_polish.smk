@@ -1,7 +1,7 @@
 rule files:
     params:
-        ref=config["output_path"] + "/binned_{sample}/{analysis_stem}.fasta"
-
+        ref=config["output_path"] + "/binned_{sample}/{analysis_stem}.fasta",
+        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq"
 rule minimap2_racon0:
     input:
         reads=config["output_path"] + "/binned_{sample}/{analysis_stem}.fastq",
@@ -13,7 +13,7 @@ rule minimap2_racon0:
 
 rule racon1:
     input:
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        reads=rules.files.params.reads,
         fasta=rules.files.params.ref,
         paf= rules.minimap2_racon0.output
     output:
@@ -51,7 +51,7 @@ rule clean1:
 
 rule minimap2_racon1:
     input:
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        reads=rules.files.params.reads,
         ref= rules.clean1.output
     output:
         config["output_path"] + "/binned_{sample}/polishing/{analysis_stem}/mapped.racon1.paf"
@@ -60,7 +60,7 @@ rule minimap2_racon1:
 
 rule racon2:
     input:
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        reads=rules.files.params.reads,
         fasta= rules.clean1.output,
         paf= rules.minimap2_racon1.output
     output:
@@ -99,7 +99,7 @@ rule clean2:
 
 rule minimap2_racon2:
     input:
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        reads=rules.files.params.reads,
         ref= rules.clean2.output
     output:
         config["output_path"] + "/binned_{sample}/polishing/{analysis_stem}/mapped.racon2.paf"
@@ -108,7 +108,7 @@ rule minimap2_racon2:
 
 rule racon3:
     input:
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        reads=rules.files.params.reads,
         fasta= rules.clean2.output,
         paf= rules.minimap2_racon2.output
     output:
@@ -147,7 +147,7 @@ rule clean3:
 
 rule minimap2_racon3:
     input:
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        reads=rules.files.params.reads,
         ref= rules.clean3.output
     output:
         config["output_path"] + "/binned_{sample}/polishing/{analysis_stem}/mapped.racon3.paf"
@@ -156,7 +156,7 @@ rule minimap2_racon3:
 
 rule racon4:
     input:
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        reads=rules.files.params.reads,
         fasta= rules.clean3.output,
         paf= rules.minimap2_racon3.output
     output:
@@ -194,7 +194,7 @@ rule clean4:
 
 rule minimap2_racon4:
     input:
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        reads=rules.files.params.reads,
         ref= rules.clean4.output
     output:
         config["output_path"] + "/binned_{sample}/polishing/{analysis_stem}/mapped.racon4.paf"
@@ -203,7 +203,7 @@ rule minimap2_racon4:
 
 rule medaka:
     input:
-        basecalls=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq",
+        basecalls=rules.files.params.reads,
         draft= rules.clean4.output
     params:
         outdir=config["output_path"] + "/binned_{sample}/medaka/{analysis_stem}"
