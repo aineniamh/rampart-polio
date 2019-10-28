@@ -1,5 +1,9 @@
 {
     "name": "ARTIC Poliovirus protocol v1.1",
     "description": "Amplicon based sequencing of Poliovirus.",
-    "url": "http://artic.network/"
+    "url": "http://artic.network/",
+    "displayOptions": {
+    	"readOffset": 2480
+    }
+    
   }
