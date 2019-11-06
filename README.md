@@ -2,8 +2,57 @@
 
 This pipeline complements [``RAMPART``](https://github.com/artic-network/rampart) and continues downstream analysis to consensus level.
 
-## background
+## Installing
+Clone this repository:
 
+```
+git clone https://github.com/aineniamh/rampart-polio.git
+```
+
+Create conda environment and activate it:
+
+```
+cd rampart-polio
+conda env create -f environment.yml
+conda activate rampart-polio
+```
+
+## Running
+
+Create run folder:
+
+```
+mkdir [run_name]
+cd [run_name]
+```
+
+Where `[run_name]` is whatever you are calling todays run (as specified in MinKNOW).
+
+Run RAMPART:
+
+```
+rampart --protocol ../rampart-polio --basecalledPath ~/MinKNOW/data/reads/[run_name]/pass --annotationOptions barcode_set=[native | rapid | pcr | all]
+```
+
+`basecalledPath` should be set to whereever MinKNOW/guppy is going to write its basecalled files.
+
+
+
+Open a web browser to view [http://localhost:3000](http://localhost:3000)
+
+<!-- 
+## Table of contents
+
+  * [Background](#background)
+  * [Protocol](protocol/Norovirus-2kb-Nanopore-sequencing-protocol.md)
+  * [Pipeline details](#pipeline)
+  * [Setup](#setup)
+  * [Usage](#usage)
+  * [References](#references)
+
+
+## background -->
+<!-- 
 Resources to aid in sequencing poliovirus in a clinical or field setting using nanopore technology. The bioinformatic pipeline was developed using [snakemake](https://snakemake.readthedocs.io/en/stable/). 
 
 
@@ -68,4 +117,4 @@ The analysis pipeline can be run independently as part of a stand-alone analysis
 8. The first step is the ``bin_to_fastq`` pipeline. [``BinLorry``](https://github.com/rambaut/binlorry) parses through the fastq files with barcode labels, pulling out the relevant reads and binning them into a single fastq file for that sample. It also applies a read-length filter, that you can customise in the GUI, and can filter by reference match, in cases of mixed-samples.
 9. A process (the ``assess_sample`` pipeline) determines how many analyses to run per sample. Based on customisable ``min_reads`` and ``min_pcent`` parameters, the process checks whether there are multiple different virus genotypes within that sample and determines the number of parallel analyses that will be needed (one per type of virus).
 10. The ``make_consensus`` pipeline then implements a neural-network consensus polishing algorithm. [``racon``](https://github.com/isovic/racon) and [``minimap2``](https://github.com/lh3/minimap2) are run iteratively four times against the fastq reads, generating a better consensus each time, and then a final polishing consensus-generation step is performed using [``medaka``](https://github.com/nanoporetech/medaka).
-11. A markdown report is generated, summarising the viral profile of each sample.
+11. A markdown report is generated, summarising the viral profile of each sample. -->

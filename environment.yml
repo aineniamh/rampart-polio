@@ -9,15 +9,13 @@ dependencies:
   - coreutils=8.25
   - mafft
   - medaka=0.10.0
-  - miniasm
   - minimap2=2.17
-  - nanopolish
-  - nodejs=12.12.0
-  - npm=6.12.0
+  - node=12.13.0
   - pandas=0.23.0=py36_1
   - pip=19.1
   - python=3.6
   - racon=1.4.7
+  - artic-network::rampart
   - samtools=1.9
   - snakemake=5.4.3
   - watchdog=0.8.3=py36_0
