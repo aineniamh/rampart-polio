@@ -8,11 +8,11 @@ rule makeblastdb:
 
 rule whoami:
     input:
-        consensus= output_dir + "/medaka/{barcode}/consensus.fasta",
+        consensus= config["output_path"] + "/binned_{sample}/medaka/{analysis_stem}/consensus.fasta",
         db="references/VP1_Database_wt_and_sabin.fasta",
         db_hidden="references/VP1_Database_wt_and_sabin.fasta.nhr"
     output:
-        output_dir +"/whoami/{barcode}/barcode_{barcode}.blast.csv"
+        config["output_path"] + "/binned_{sample}/blast/{analysis_stem}.blast.csv"
     shell:
         "blastn -task blastn -db {input.db} "
         "-query {input.consensus} -out {output} "
@@ -28,11 +28,11 @@ rule makeblastdb_detailed:
 
 rule whoami_detailed:
     input:
-        consensus= output_dir + "/medaka/{barcode}/consensus.fasta",
+        consensus= config["output_path"] + "/binned_{sample}/medaka/{analysis_stem}/consensus.fasta",
         db="references/VP1_Database_DetailedPV.fasta",
         db_hidden="references/VP1_Database_DetailedPV.fasta.nhr"
     output:
-        output_dir +"/whoami/{barcode}/barcode_{barcode}.detailed.blast.csv"
+        config["output_path"] + "/binned_{sample}/blast/{analysis_stem}.detailed.blast.csv"
     shell:
         "blastn -task blastn -db {input.db} "
         "-query {input.consensus} -out {output} "
@@ -40,16 +40,16 @@ rule whoami_detailed:
 
 rule make_report:
     input:
-        blast=output_dir +"/whoami/{barcode}/barcode_{barcode}.blast.csv",
-        consensus= output_dir + "/medaka/{barcode}/consensus.fasta",
+        blast=config["output_path"] + "/binned_{sample}/blast/{analysis_stem}.blast.csv",
+        consensus= config["output_path"] + "/binned_{sample}/medaka/{analysis_stem}/consensus.fasta",
         db="references/VP1_Database_wt_and_sabin.fasta",
-        blast_detailed=output_dir +"/whoami/{barcode}/barcode_{barcode}.detailed.blast.csv",
+        blast_detailed=config["output_path"] + "/binned_{sample}/blast/{analysis_stem}.detailed.blast.csv",
         db_detailed="references/VP1_Database_DetailedPV.fasta"
     params:
-        barcode="{barcode}"
+        barcode="{sample}"
     output:
-        report=output_dir +"/whoami/{barcode}/barcode_{barcode}.report.md",
-        seqs=output_dir +"/whoami/{barcode}/barcode_{barcode}.fasta"
+        report=config["output_path"] + "/binned_{sample}/report/{analysis_stem}.report.md",
+        seqs=config["output_path"] + "/binned_{sample}/report/{analysis_stem}.fasta"
     shell:
         "python rules/generate_report.py "
         "--blast_file {input.blast} --detailed_blast_file {input.blast_detailed} "
@@ -57,20 +57,3 @@ rule make_report:
         "--consensus {input.consensus} "
         "--output_report {output.report} --output_seqs {output.seqs} "
         "--sample {params.barcode}"
-
-rule mafft:
-    input:
-        output_dir +"/whoami/{barcode}/barcode_{barcode}.fasta"
-    output:
-        output_dir +"/whoami/{barcode}/barcode_{barcode}.aln.fasta"
-    shell:
-        "mafft {input} > {output}"
-
-rule iqtree:
-    input:
-        output_dir +"/whoami/{barcode}/barcode_{barcode}.aln.fasta"
-    output:
-        output_dir +"/whoami/{barcode}/barcode_{barcode}.aln.fasta.treefile"
-    shell:
-        "iqtree -s {input} -m HKY+G -nt 1 "
-        

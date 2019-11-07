@@ -221,3 +221,5 @@ rule gather_sequences:
         config["output_path"]+"/consensus_sequences/{sample}.fasta" # will need to rename the individual fasta seqs
     shell:
         "cat {input} > {output}" 
+
+
