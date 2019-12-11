@@ -1,59 +1,35 @@
-rule makeblastdb:
+rule align_cns_to_ref:
     input:
-        "references/VP1_Database_wt_and_sabin.fasta"
-    output:
-        "references/VP1_Database_wt_and_sabin.fasta.nhr"
-    shell:
-        "makeblastdb -in {input} -dbtype nucl"
-
-rule whoami:
-    input:
-        consensus= config["output_path"] + "/binned_{sample}/medaka/{analysis_stem}/consensus.fasta",
-        db="references/VP1_Database_wt_and_sabin.fasta",
-        db_hidden="references/VP1_Database_wt_and_sabin.fasta.nhr"
-    output:
-        config["output_path"] + "/binned_{sample}/blast/{analysis_stem}.blast.csv"
-    shell:
-        "blastn -task blastn -db {input.db} "
-        "-query {input.consensus} -out {output} "
-        "-num_threads 1 -outfmt 10"
-
-rule makeblastdb_detailed:
-    input:
-        "references/VP1_Database_DetailedPV.fasta"
-    output:
-        "references/VP1_Database_DetailedPV.fasta.nhr"
-    shell:
-        "makeblastdb -in {input} -dbtype nucl"
-
-rule whoami_detailed:
-    input:
-        consensus= config["output_path"] + "/binned_{sample}/medaka/{analysis_stem}/consensus.fasta",
-        db="references/VP1_Database_DetailedPV.fasta",
-        db_hidden="references/VP1_Database_DetailedPV.fasta.nhr"
-    output:
-        config["output_path"] + "/binned_{sample}/blast/{analysis_stem}.detailed.blast.csv"
-    shell:
-        "blastn -task blastn -db {input.db} "
-        "-query {input.consensus} -out {output} "
-        "-num_threads 1 -outfmt 10"
-
-rule make_report:
-    input:
-        blast=config["output_path"] + "/binned_{sample}/blast/{analysis_stem}.blast.csv",
-        consensus= config["output_path"] + "/binned_{sample}/medaka/{analysis_stem}/consensus.fasta",
-        db="references/VP1_Database_wt_and_sabin.fasta",
-        blast_detailed=config["output_path"] + "/binned_{sample}/blast/{analysis_stem}.detailed.blast.csv",
-        db_detailed="references/VP1_Database_DetailedPV.fasta"
+       fasta = config["output_path"] + "/binned_{sample}/{analysis_stem}.consensus.fasta",
+       ref = config["output_path"] + "/binned_{sample}/{analysis_stem}.fasta"
     params:
-        barcode="{sample}"
+        temp_file = config["output_path"] + "/binned_{sample}/temp.cns_ref_aln.fasta"
     output:
-        report=config["output_path"] + "/binned_{sample}/report/{analysis_stem}.report.md",
-        seqs=config["output_path"] + "/binned_{sample}/report/{analysis_stem}.fasta"
+        config["output_path"] + "/binned_{sample}/{analysis_stem}.consensus_to_ref.aln.fasta"
     shell:
-        "python rules/generate_report.py "
-        "--blast_file {input.blast} --detailed_blast_file {input.blast_detailed} "
-        "--blast_db {input.db} --detailed_blast_db {input.db_detailed} "
-        "--consensus {input.consensus} "
-        "--output_report {output.report} --output_seqs {output.seqs} "
-        "--sample {params.barcode}"
+        "cat {input.ref} {input.fasta} > {params.temp_file} && "
+        "mafft {params.temp_file} > {output} && "
+        "rm {params.temp_file}"
+
+rule generate_report:
+    input:
+        aln = rules.align_cns_to_ref.output,
+        cns = rules.medaka.output
+    params:
+        path_to_script = workflow.current_basedir,
+        sample = "{sample}_{analysis_stem}"
+    output:
+        config["output_path"] + "/binned_{sample}/report/{analysis_stem}.report.md"
+    shell:
+        "python {params.path_to_script}/make_report.py "
+        "-i {input.aln} "
+        "-o {output} "
+        "--sample {params.sample}"
+
+rule gather_reports:
+    input:
+        expand(config["output_path"] + "/binned_{{sample}}/report/{analysis_stem}.report.md", analysis_stem=config["analysis_stem"])
+    output:
+        config["output_path"] + "/reports/{sample}.report.md"
+    shell:
+        "cat {input} > {output}"

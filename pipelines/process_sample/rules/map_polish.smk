@@ -1,7 +1,7 @@
 rule files:
     params:
         ref=config["output_path"] + "/binned_{sample}/{analysis_stem}.fasta",
-        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.primer_trimmed.fastq"
+        reads=config["output_path"]+"/binned_{sample}/{analysis_stem}.fastq"
 
 rule minimap2_racon0:
     input:
@@ -240,10 +240,19 @@ rule clean5:
         path_to_script = workflow.current_basedir,
         seq_name = "{analysis_stem}"
     output:
-        config["output_path"] + "/binned_{sample}/polishing/{analysis_stem}/medaka.clean.fasta"
+        config["output_path"] + "/binned_{sample}/{analysis_stem}.consensus.fasta"
     shell:
         "python {params.path_to_script}/clean.py "
         "--alignment_with_ref {input.aln} "
         "--name {params.seq_name} "
         "--output_seq {output} "
         "--polish_round medaka"
+
+rule gather_files:
+    input:
+        expand(config["output_path"] +  "/binned_{{sample}}/{analysis_stem}.consensus.fasta", analysis_stem=config["analysis_stem"])
+    output:
+        config["output_path"] + "/consensus_sequences/{sample}.fasta"
+    shell:
+        "cat {input} > {output}"
+

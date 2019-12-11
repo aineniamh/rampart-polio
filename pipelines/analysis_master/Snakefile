@@ -19,7 +19,8 @@ stems = PersistentDict("stem_store")
 
 rule all:
     input:
-        config["output_path"] + f"/consensus_sequences/{sample_name}.fasta"
+        config["output_path"] + f"/consensus_sequences/{sample_name}.fasta",
+        config["output_path"] + f"/reports/{sample_name}.report.md"
 
 rule binlorry:
     input:
@@ -80,7 +81,8 @@ rule process_sample:
         output_path= config["output_path"],
         path = workflow.current_basedir
     output:
-        cns = config["output_path"] + "/consensus_sequences/{sample}.fasta"
+        cns = config["output_path"] + "/consensus_sequences/{sample}.fasta",
+        reports = config["output_path"] + "/reports/{sample}.report.md"
     run:
         analysis_stem = stems.fetch("analysis_stem")
         
